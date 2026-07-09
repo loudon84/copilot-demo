@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>商品查看</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.9.21/dist/css/layui.css">
+  <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<div class="app-header">CRM Lite 商品管理 Demo — HostBridge v6.0</div>
+<div class="app-nav">
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/product-list.html">商品列表</a>
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/product-form.html">商品新建</a>
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/suppliers.html">供应商列表</a>
+</div>
+<div class="app-container">
+
+  <div class="card">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;gap:12px;flex-wrap:wrap;">
+      <h2 style="font-size:20px;">商品查看</h2>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <button type="button" id="btnAiAnalytic" class="layui-btn layui-btn-sm layui-btn-warm">AI 分析</button>
+        <button type="button" id="btnAiCreate" class="layui-btn layui-btn-sm">AI 新建草稿</button>
+        <button type="button" id="btnAiEdit" class="layui-btn layui-btn-sm layui-btn-normal">AI 编辑</button>
+        <a id="editBtn" class="layui-btn layui-btn-primary layui-btn-sm">手工编辑</a>
+        <a class="layui-btn layui-btn-primary layui-btn-sm" href="/product-list.html">返回列表</a>
+      </div>
+    </div>
+    <div class="bridge-panel">
+      <b>HostBridge 验证区</b>
+      <span class="status-pill" id="desktopStatus">检测中</span>
+      <span class="muted" id="sdkVersion"></span>
+      <div class="muted" style="margin-top:6px;">
+        <code>host.bridge.submit</code>：分析走 <code>action=analytic</code>；新建/编辑带 <code>callbackUrl</code> 打开表单页并完成 handoff。
+        兼容旧版可调用 <code>submitProductContext()</code>（等价 <code>action=view</code>）。
+      </div>
+      <pre class="bridge-log" id="bridgeLog">等待 HostBridge submit…</pre>
+    </div>
+    <table class="layui-table detail-table" id="detailTable"></table>
+    <fieldset class="layui-elem-field layui-field-title"><legend>供应商库存供货</legend></fieldset>
+    <table class="layui-table"><thead><tr><th>供应商ID</th><th>供应商名称</th><th>供货价</th><th>库存</th><th>MOQ</th><th>交期天数</th><th>状态</th><th>备注</th></tr></thead><tbody id="supplierRows"></tbody></table>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/layui@2.9.21/dist/layui.js"></script>
+<script src="/assets/api.js"></script>
+<script src="/assets/crm-lite-jssdk.js"></script>
+
+<script>
+function getHostSdk() {
+  return (
+    window.CopilotCrmLiteDemoSDK ||
+    window.CopilotCrmDesktopSDK ||
+    window.CopilotHostBridgeSDK
+  );
+}
+
+function isBridgeAvailable(sdk) {
+  if (!sdk) return false;
+  if (typeof sdk.isAvailable === 'function' && sdk.isAvailable()) return true;
+  if (typeof sdk.isDesktopAvailable === 'function' && sdk.isDesktopAvailable()) return true;
+  return false;
+}
+
+function updateBridgeStatusPill(available) {
+  document.getElementById('desktopStatus').innerText = available
+    ? 'HostBridge 可用'
+    : '普通浏览器 / 未检测到 HostBridge';
+}
+
+function buildProductPageContext(product) {
+  return {
+    app: 'crm-lite',
+    url: window.location.href,
+    title: document.title,
+    entityType: 'product',
+    entityId: product.id,
+    entityName: product.productName,
+    data: { product: product },
+  };
+}
+
+function productFormCallbackUrl(action, entityId) {
+  var url = window.location.origin + '/product-form.html?action=' + encodeURIComponent(action);
+  if (entityId) url += '&id=' + encodeURIComponent(entityId);
+  return url;
+}
+
+async function hostSubmit(product, input, trigger) {
+  var sdk = getHostSdk();
+  appendBridgeLog('bridgeLog', { event: 'host.bridge.submit', input: input, trigger: trigger });
+  var result = await sdk.submit({
+    formType: 'order',
+    action: input.action,
+    skillName: input.skillName,
+    callbackUrl: input.callbackUrl,
+    pageContext: buildProductPageContext(product),
+    trigger: trigger,
+  });
+  appendBridgeLog('bridgeLog', { event: 'host.bridge.submit.result', result: result });
+  return result;
+}
+
+window.addEventListener('crm-lite:bridge-status', function (event) {
+  updateBridgeStatusPill(event.detail && event.detail.available);
+});
+
+layui.use(['layer'], async function () {
+  var layer = layui.layer;
+  var id = getQuery('id');
+  if (!id) {
+    layer.msg('缺少商品ID');
+    return;
+  }
+
+  var sdk = getHostSdk();
+  var versionEl = document.getElementById('sdkVersion');
+  if (versionEl && sdk) {
+    versionEl.textContent = ' SDK ' + (sdk.version || '?') + ' / protocol ' + (sdk.protocolVersion || '?');
+  }
+  updateBridgeStatusPill(isBridgeAvailable(sdk));
+
+  var p = await API.getProduct(id);
+  document.getElementById('editBtn').href = '/product-form.html?id=' + encodeURIComponent(id);
+
+  var fields = [
+    ['SKU', p.sku], ['品牌', p.brand], ['型号', p.model], ['商品名称', p.productName],
+    ['系列', p.series], ['操作系统', p.os], ['芯片', p.chipset], ['屏幕尺寸', p.screenSize],
+    ['内存', p.ram], ['存储', p.storage], ['颜色', p.color], ['电池容量', p.batteryMah + ' mAh'],
+    ['网络制式', p.network], ['零售价', '¥' + money(p.retailPrice)], ['状态', p.status],
+    ['上市日期', p.launchDate], ['描述', p.description], ['创建时间', p.createdAt], ['更新时间', p.updatedAt],
+  ];
+  document.getElementById('detailTable').innerHTML = fields
+    .map(function (row) { return '<tr><th>' + esc(row[0]) + '</th><td>' + esc(row[1] || '-') + '</td></tr>'; })
+    .join('');
+
+  var rows = (p.suppliers || []).map(function (s) {
+    return '<tr><td>' + esc(s.supplierId) + '</td><td>' + esc(s.supplierName) + '</td><td>¥' + money(s.supplyPrice) +
+      '</td><td>' + esc(s.stockQty) + '</td><td>' + esc(s.moq) + '</td><td>' + esc(s.leadTimeDays) + '</td><td>' +
+      esc(s.status) + '</td><td>' + esc(s.remark) + '</td></tr>';
+  }).join('');
+  document.getElementById('supplierRows').innerHTML = rows || '<tr><td colspan="8" class="muted">暂无供应商供货记录</td></tr>';
+
+  document.getElementById('btnAiAnalytic').addEventListener('click', async function () {
+    var result = await hostSubmit(p, {
+      action: 'analytic',
+      skillName: 'crm-product-analytic',
+    }, { elementId: 'btnAiAnalytic', label: 'AI 分析' });
+    if (result && result.ok) layer.msg('已提交 AI 分析');
+    else layer.msg((result && result.message) || '已发出 fallback 事件（浏览器直开时无 Electron）');
+  });
+
+  document.getElementById('btnAiCreate').addEventListener('click', async function () {
+    var result = await hostSubmit(p, {
+      action: 'create',
+      skillName: 'crm-product-create',
+      callbackUrl: productFormCallbackUrl('create'),
+    }, { elementId: 'btnAiCreate', label: 'AI 新建草稿' });
+    if (result && result.ok) layer.msg('已提交新建；Desktop 将打开 callback 表单页并 handoff 填充');
+    else layer.msg((result && result.message) || '已发出 fallback 事件');
+  });
+
+  document.getElementById('btnAiEdit').addEventListener('click', async function () {
+    var result = await hostSubmit(p, {
+      action: 'edit',
+      skillName: 'crm-product-edit',
+      callbackUrl: productFormCallbackUrl('edit', p.id),
+    }, { elementId: 'btnAiEdit', label: 'AI 编辑' });
+    if (result && result.ok) layer.msg('已提交编辑；Desktop 将打开 callback 表单页并 handoff 填充');
+    else layer.msg((result && result.message) || '已发出 fallback 事件');
+  });
+});
+</script>
+</body>
+</html>

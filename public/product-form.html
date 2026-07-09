@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>商品新建/编辑</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.9.21/dist/css/layui.css">
+  <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<div class="app-header">CRM Lite 商品管理 Demo — HostBridge v6.0</div>
+<div class="app-nav">
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/product-list.html">商品列表</a>
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/product-form.html">商品新建</a>
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/suppliers.html">供应商列表</a>
+</div>
+<div class="app-container">
+
+  <div class="card">
+    <h2 id="pageTitle" style="font-size:20px;margin-bottom:12px;">商品新建表单</h2>
+    <div class="bridge-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div>
+          <b>HostBridge 接收区</b>
+          <span class="status-pill" id="desktopStatus">检测中</span>
+          <span class="muted" id="sdkVersion"></span>
+          <div class="muted">
+            页面加载后发送 <code>host.page.ready</code>；Desktop handoff 下发
+            <code>desktop.host.form.fill</code>，页面通过 <code>onCommand</code> + <code>ack</code> 确认。
+          </div>
+        </div>
+        <div>
+          <button type="button" class="layui-btn layui-btn-sm layui-btn-primary" id="btnEmitReady">重发 ready</button>
+          <button type="button" class="layui-btn layui-btn-sm layui-btn-primary" id="btnMockHostFill">模拟 host.form.fill</button>
+        </div>
+      </div>
+      <pre class="bridge-log" id="bridgeLog">等待 host.page.ready / desktop.host.form.fill…</pre>
+    </div>
+    <form class="layui-form" lay-filter="productForm">
+      <div class="form-grid">
+        <div class="layui-form-item"><label class="layui-form-label required">SKU</label><div class="layui-input-block"><input type="text" name="sku" required lay-verify="required" placeholder="例：PHONE-APPLE-15P" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label required">品牌</label><div class="layui-input-block"><input type="text" name="brand" required lay-verify="required" placeholder="例：Apple / Huawei / Xiaomi" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label required">型号</label><div class="layui-input-block"><input type="text" name="model" required lay-verify="required" placeholder="例：iPhone 15 Pro" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label required">商品名称</label><div class="layui-input-block"><input type="text" name="productName" required lay-verify="required" placeholder="例：Apple iPhone 15 Pro 256GB" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">系列</label><div class="layui-input-block"><input type="text" name="series" placeholder="例：iPhone 15 系列" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">操作系统</label><div class="layui-input-block"><input type="text" name="os" placeholder="例：iOS 17 / Android 14" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">芯片</label><div class="layui-input-block"><input type="text" name="chipset" placeholder="例：A17 Pro / Snapdragon 8 Gen 3" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">屏幕尺寸</label><div class="layui-input-block"><input type="text" name="screenSize" placeholder="例：6.1 英寸" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">内存</label><div class="layui-input-block"><input type="text" name="ram" placeholder="例：8GB" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">存储</label><div class="layui-input-block"><input type="text" name="storage" placeholder="例：256GB" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">颜色</label><div class="layui-input-block"><input type="text" name="color" placeholder="例：黑色 / 蓝色" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">电池mAh</label><div class="layui-input-block"><input type="number" name="batteryMah" placeholder="例：4500" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">网络制式</label><div class="layui-input-block"><input type="text" name="network" placeholder="例：5G 全网通" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">零售价</label><div class="layui-input-block"><input type="number" name="retailPrice" placeholder="例：7999" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">上市日期</label><div class="layui-input-block"><input type="date" name="launchDate" class="layui-input"></div></div>
+        <div class="layui-form-item"><label class="layui-form-label">状态</label><div class="layui-input-block"><select name="status"><option value="draft">草稿</option><option value="active">上架</option><option value="inactive">下架</option></select></div></div>
+      </div>
+      <div class="layui-form-item"><label class="layui-form-label">商品描述</label><div class="layui-input-block"><textarea name="description" placeholder="填写手机卖点、配置说明、备注" class="layui-textarea"></textarea></div></div>
+      <fieldset class="layui-elem-field layui-field-title"><legend>供应商库存供货子表</legend></fieldset>
+      <div class="sub-toolbar"><button type="button" class="layui-btn layui-btn-sm" id="btnAddSupplier">从供应商列表选择</button><span class="muted">子表数据会随商品一起保存到 data/products.json</span></div>
+      <table class="layui-table"><thead><tr><th style="width:110px;">供应商ID</th><th>供应商名称</th><th style="width:110px;">供货价</th><th style="width:100px;">库存</th><th style="width:90px;">MOQ</th><th style="width:110px;">交期天数</th><th style="width:110px;">状态</th><th>备注</th><th style="width:80px;">操作</th></tr></thead><tbody id="supplierRows"></tbody></table>
+      <div class="layui-form-item" style="margin-top:18px;"><button type="submit" class="layui-btn" lay-submit lay-filter="saveProduct">保存商品</button><a class="layui-btn layui-btn-primary" href="/product-list.html">返回列表</a></div>
+    </form>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/layui@2.9.21/dist/layui.js"></script>
+<script src="/assets/api.js"></script>
+<script src="/assets/crm-lite-jssdk.js"></script>
+
+<script>
+function getHostSdk() {
+  return (
+    window.CopilotCrmLiteDemoSDK ||
+    window.CopilotCrmDesktopSDK ||
+    window.CopilotHostBridgeSDK
+  );
+}
+
+function isBridgeAvailable(sdk) {
+  if (!sdk) return false;
+  if (typeof sdk.isAvailable === 'function' && sdk.isAvailable()) return true;
+  if (typeof sdk.isDesktopAvailable === 'function' && sdk.isDesktopAvailable()) return true;
+  return false;
+}
+
+function updateBridgeStatusPill(available) {
+  document.getElementById('desktopStatus').innerText = available
+    ? 'HostBridge 可用'
+    : '普通浏览器 / 未检测到 HostBridge';
+}
+
+window.addEventListener('crm-lite:bridge-status', function (event) {
+  updateBridgeStatusPill(event.detail && event.detail.available);
+});
+
+layui.use(['form', 'layer'], async function () {
+  var form = layui.form;
+  var layer = layui.layer;
+  var sdk = getHostSdk();
+  var id = getQuery('id');
+  var urlAction = new URLSearchParams(location.search).get('action');
+  var hostAction = urlAction || (id ? 'edit' : 'create');
+  var suppliers = [];
+  var product = {};
+
+  var versionEl = document.getElementById('sdkVersion');
+  if (versionEl && sdk) {
+    versionEl.textContent = ' SDK ' + (sdk.version || '?') + ' / protocol ' + (sdk.protocolVersion || '?');
+  }
+  updateBridgeStatusPill(isBridgeAvailable(sdk));
+
+  function defaultProduct() {
+    return {
+      sku: 'PHONE-' + Date.now(),
+      brand: 'Apple',
+      model: 'iPhone 15 Pro',
+      productName: 'Apple iPhone 15 Pro 256GB',
+      series: 'iPhone 15 系列',
+      os: 'iOS 17',
+      chipset: 'A17 Pro',
+      screenSize: '6.1 英寸',
+      ram: '8GB',
+      storage: '256GB',
+      color: '黑色',
+      batteryMah: 3274,
+      network: '5G 全网通',
+      retailPrice: 7999,
+      status: 'draft',
+      launchDate: '',
+      description: '',
+    };
+  }
+
+  function renderSupplierRows() {
+    var html = suppliers.map(function (s, idx) {
+      return '<tr data-index="' + idx + '"><td>' + esc(s.supplierId) + '</td><td>' + esc(s.supplierName) +
+        '</td><td><input class="layui-input sub-input" data-field="supplyPrice" type="number" value="' + esc(s.supplyPrice ?? '') +
+        '"></td><td><input class="layui-input sub-input" data-field="stockQty" type="number" value="' + esc(s.stockQty ?? '') +
+        '"></td><td><input class="layui-input sub-input" data-field="moq" type="number" value="' + esc(s.moq ?? 1) +
+        '"></td><td><input class="layui-input sub-input" data-field="leadTimeDays" type="number" value="' + esc(s.leadTimeDays ?? '') +
+        '"></td><td><select class="sub-select" data-field="status"><option value="available"' + (s.status === 'available' ? ' selected' : '') +
+        '>可供货</option><option value="limited"' + (s.status === 'limited' ? ' selected' : '') +
+        '>限量</option><option value="stop"' + (s.status === 'stop' ? ' selected' : '') +
+        '>暂停</option></select></td><td><input class="layui-input sub-input" data-field="remark" value="' + esc(s.remark ?? '') +
+        '"></td><td><button type="button" class="layui-btn layui-btn-danger layui-btn-xs btn-remove" data-index="' + idx + '">移除</button></td></tr>';
+    }).join('');
+    document.getElementById('supplierRows').innerHTML = html || '<tr><td colspan="9" class="muted">暂无供应商供货记录</td></tr>';
+    form.render('select');
+  }
+
+  function syncSupplierRows() {
+    document.querySelectorAll('#supplierRows tr[data-index]').forEach(function (tr) {
+      var idx = Number(tr.dataset.index);
+      tr.querySelectorAll('.sub-input,.sub-select').forEach(function (input) {
+        var field = input.dataset.field;
+        var numeric = ['supplyPrice', 'stockQty', 'moq', 'leadTimeDays'].indexOf(field) >= 0;
+        suppliers[idx][field] = numeric ? Number(input.value || 0) : input.value;
+      });
+    });
+  }
+
+  function applyHostFillPayload(payload) {
+    if (!payload) return;
+    var fields = payload.fields || payload.product || {};
+    product = Object.assign({}, product, fields);
+    form.val('productForm', product);
+    if (payload.subTables && Array.isArray(payload.subTables.suppliers)) {
+      suppliers = payload.subTables.suppliers;
+      renderSupplierRows();
+    }
+    form.render('select');
+    appendBridgeLog('bridgeLog', { event: 'host.form.fill.applied', fields: fields, suppliers: suppliers });
+  }
+
+  function buildPageContext() {
+    return {
+      app: 'crm-lite',
+      url: window.location.href,
+      title: document.title,
+      entityType: 'product',
+      entityId: id || undefined,
+      entityName: product.productName,
+    };
+  }
+
+  async function emitHostReady(label) {
+    var result = await sdk.ready({
+      formType: 'product',
+      action: hostAction,
+      pageContext: buildPageContext(),
+    });
+    appendBridgeLog('bridgeLog', {
+      event: 'host.page.ready',
+      action: hostAction,
+      trigger: label || 'auto',
+      result: result,
+    });
+    return result;
+  }
+
+  sdk.onCommand(function (command) {
+    appendBridgeLog('bridgeLog', { direction: 'host.desktop.command', command: command });
+    var type = command && command.type;
+    if (
+      type === 'desktop.host.form.fill' ||
+      type === 'desktop.host.from.fill' ||
+      type === 'desktop.crm.form.fill' ||
+      type === 'desktop.crm.product.fillForm'
+    ) {
+      applyHostFillPayload(command.payload || {});
+      if (command.commandId) {
+        sdk.ack(command.commandId, {
+          ok: true,
+          type: type,
+          action: 'host.form.fill',
+          message: 'Layui 主表与子表已回填',
+        });
+        appendBridgeLog('bridgeLog', { event: 'host.desktop.command.ack', commandId: command.commandId });
+      }
+    }
+  });
+
+  window.addEventListener('crm-lite:product-filled', function (event) {
+    var input = event.detail && event.detail.product;
+    if (!input) return;
+    applyHostFillPayload({ fields: input });
+  });
+
+  function sampleHostFillPayload() {
+    return {
+      fields: {
+        sku: 'PHONE-HOST-' + Date.now(),
+        brand: 'HostBridge Mobile',
+        model: 'Handoff X1',
+        productName: 'HostBridge Handoff X1 512GB',
+        series: 'Handoff 系列',
+        os: 'Android 14',
+        chipset: 'Snapdragon 8 Gen 3',
+        screenSize: '6.7 英寸',
+        ram: '12GB',
+        storage: '512GB',
+        color: '钛灰色',
+        batteryMah: 5000,
+        network: '5G 全网通',
+        retailPrice: 5999,
+        status: 'draft',
+        launchDate: '2026-06-01',
+        description: '由 HostBridge desktop.host.form.fill 回填的演示商品',
+      },
+      subTables: {
+        suppliers: [{
+          supplierId: 'SUP-0001',
+          supplierName: '华芯供应链',
+          supplyPrice: 4200,
+          stockQty: 300,
+          moq: 10,
+          leadTimeDays: 7,
+          status: 'available',
+          remark: 'HostBridge handoff 测试',
+        }],
+      },
+    };
+  }
+
+  document.getElementById('btnMockHostFill').addEventListener('click', function () {
+    sdk.mockElectronCommand({
+      commandId: 'cmd_' + Date.now(),
+      type: 'desktop.host.form.fill',
+      replyRequired: true,
+      payload: sampleHostFillPayload(),
+      createdAt: new Date().toISOString(),
+    });
+  });
+
+  document.getElementById('btnEmitReady').addEventListener('click', function () {
+    void emitHostReady('btnEmitReady');
+  });
+
+  window.onSupplierPicked = function (supplier) {
+    syncSupplierRows();
+    if (suppliers.some(function (row) { return row.supplierId === supplier.id; })) {
+      layer.msg('该供应商已在子表中');
+      return;
+    }
+    suppliers.push({
+      supplierId: supplier.id,
+      supplierName: supplier.name,
+      supplyPrice: 0,
+      stockQty: 0,
+      moq: 1,
+      leadTimeDays: supplier.leadTimeDays || 7,
+      status: 'available',
+      remark: '',
+    });
+    renderSupplierRows();
+  };
+
+  document.getElementById('btnAddSupplier').addEventListener('click', function () {
+    syncSupplierRows();
+    layer.open({ type: 2, title: '选择供应商', area: ['900px', '620px'], content: '/suppliers.html?picker=1' });
+  });
+  document.getElementById('supplierRows').addEventListener('click', function (e) {
+    if (e.target.classList.contains('btn-remove')) {
+      syncSupplierRows();
+      suppliers.splice(Number(e.target.dataset.index), 1);
+      renderSupplierRows();
+    }
+  });
+
+  product = defaultProduct();
+  if (id) {
+    document.getElementById('pageTitle').innerText = '商品编辑表单（' + hostAction + '）';
+    product = await API.getProduct(id);
+    suppliers = product.suppliers || [];
+  } else {
+    document.getElementById('pageTitle').innerText = '商品新建表单（' + hostAction + '）';
+  }
+
+  form.val('productForm', product);
+  renderSupplierRows();
+  await emitHostReady('page-init');
+
+  form.on('submit(saveProduct)', async function (data) {
+    syncSupplierRows();
+    var payload = Object.assign({}, product, data.field, { suppliers: suppliers });
+    if (!payload.sku || !payload.brand || !payload.model || !payload.productName) {
+      layer.msg('SKU、品牌、型号、商品名称必填');
+      return false;
+    }
+    var saved = id ? await API.updateProduct(id, payload) : await API.createProduct(payload);
+    layer.msg('保存成功');
+    setTimeout(function () {
+      location.href = '/product-view.html?id=' + encodeURIComponent(saved.id);
+    }, 500);
+    return false;
+  });
+});
+</script>
+</body>
+</html>

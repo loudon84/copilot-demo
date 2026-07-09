@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>商品列表</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.9.21/dist/css/layui.css">
+  <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<div class="app-header">CRM Lite 商品管理 Demo — HostBridge v6.0</div>
+<div class="app-nav">
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/product-list.html">商品列表</a>
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/product-form.html">商品新建</a>
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/suppliers.html">供应商列表</a>
+</div>
+<div class="app-container">
+
+  <div class="card">
+    <div class="layui-row" style="margin-bottom:12px;">
+      <div class="layui-col-md6">
+        <h2 style="font-size:20px;">商品列表</h2>
+        <div class="muted">数据来源：data/products.json · HostBridge 演示入口在「查看」页</div>
+      </div>
+      <div class="layui-col-md6" style="text-align:right;">
+        <a class="layui-btn" href="/product-form.html?action=create">新建手机商品</a>
+      </div>
+    </div>
+    <div class="bridge-panel" style="margin-bottom:14px;">
+      <b>HostBridge</b> <span class="status-pill" id="desktopStatus">检测中</span>
+      <span class="muted" id="sdkVersion"></span>
+      <div class="muted" style="margin-top:6px;">
+        列表页无 submit 事件。请进入商品「查看」页使用
+        <code>host.bridge.submit</code>（AI 分析 / 新建 / 编辑），表单页使用
+        <code>host.page.ready</code> + <code>desktop.host.form.fill</code>。
+      </div>
+    </div>
+    <table class="layui-hide" id="productTable" lay-filter="productTable"></table>
+  </div>
+  <script type="text/html" id="rowActions">
+    <a class="layui-btn layui-btn-xs" lay-event="view">查看</a>
+    <a class="layui-btn layui-btn-normal layui-btn-xs" lay-event="edit">编辑</a>
+    <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+  </script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/layui@2.9.21/dist/layui.js"></script>
+<script src="/assets/api.js"></script>
+<script src="/assets/crm-lite-jssdk.js"></script>
+
+<script>
+function getHostSdk() {
+  return (
+    window.CopilotCrmLiteDemoSDK ||
+    window.CopilotCrmDesktopSDK ||
+    window.CopilotHostBridgeSDK
+  );
+}
+
+function updateBridgeStatusPill(available) {
+  document.getElementById('desktopStatus').innerText = available
+    ? 'HostBridge 可用'
+    : '普通浏览器 / 未检测到 HostBridge';
+}
+
+window.addEventListener('crm-lite:bridge-status', function (event) {
+  updateBridgeStatusPill(event.detail && event.detail.available);
+});
+
+layui.use(['table', 'layer'], async function () {
+  var table = layui.table;
+  var layer = layui.layer;
+  var sdk = getHostSdk();
+  var versionEl = document.getElementById('sdkVersion');
+  if (versionEl && sdk) {
+    versionEl.textContent = ' SDK ' + (sdk.version || '?') + ' / protocol ' + (sdk.protocolVersion || '?');
+  }
+  updateBridgeStatusPill(sdk && sdk.isDesktopAvailable && sdk.isDesktopAvailable());
+
+  async function reload() {
+    var data = await API.listProducts();
+    table.render({
+      elem: '#productTable',
+      data: data,
+      page: true,
+      height: 520,
+      cols: [[
+        { field: 'sku', title: 'SKU', width: 130 },
+        { field: 'brand', title: '品牌', width: 110 },
+        { field: 'model', title: '型号', width: 150 },
+        { field: 'productName', title: '商品名称', minWidth: 200 },
+        { field: 'ram', title: '内存', width: 90 },
+        { field: 'storage', title: '存储', width: 90 },
+        { field: 'retailPrice', title: '零售价', width: 110, templet: function (d) { return '¥' + money(d.retailPrice); } },
+        { field: 'status', title: '状态', width: 90 },
+        { field: 'suppliers', title: '供应商数', width: 100, templet: function (d) { return (d.suppliers || []).length; } },
+        { title: '操作', toolbar: '#rowActions', width: 180, fixed: 'right' },
+      ]],
+    });
+  }
+
+  table.on('tool(productTable)', async function (obj) {
+    var data = obj.data;
+    if (obj.event === 'view') {
+      location.href = '/product-view.html?id=' + encodeURIComponent(data.id);
+    }
+    if (obj.event === 'edit') {
+      location.href = '/product-form.html?id=' + encodeURIComponent(data.id) + '&action=edit';
+    }
+    if (obj.event === 'del') {
+      layer.confirm('确认删除该商品？', async function (index) {
+        await API.deleteProduct(data.id);
+        layer.close(index);
+        layer.msg('已删除');
+        reload();
+      });
+    }
+  });
+
+  reload();
+});
+</script>
+</body>
+</html>

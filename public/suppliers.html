@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>供应商列表</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/layui@2.9.21/dist/css/layui.css">
+  <link rel="stylesheet" href="/assets/app.css">
+</head>
+<body>
+<div class="app-header">CRM Lite 商品管理 Demo - Electron Bridge 验证</div>
+<div class="app-nav">
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/product-list.html">商品列表</a>
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/product-form.html">商品新建</a>
+  <a class="layui-btn layui-btn-primary layui-btn-sm" href="/suppliers.html">供应商列表</a>
+</div>
+<div class="app-container">
+
+  <div class="card"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;"><div><h2 style="font-size:20px;">供应商列表</h2><div class="muted">系统启动后读取 data/suppliers.json。商品表单中可弹窗选择供应商。</div></div><a class="layui-btn layui-btn-primary layui-btn-sm" href="/product-list.html">返回商品列表</a></div><table class="layui-hide" id="supplierTable" lay-filter="supplierTable"></table></div>
+  <script type="text/html" id="supplierActions">{{# if(new URLSearchParams(location.search).get('picker') === '1'){ }}<a class="layui-btn layui-btn-xs" lay-event="pick">选择</a>{{# } }}</script>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/layui@2.9.21/dist/layui.js"></script>
+<script src="/assets/api.js"></script>
+<script src="/assets/crm-lite-jssdk.js"></script>
+
+<script>
+layui.use(['table','layer'], async function(){ const table=layui.table, layer=layui.layer, isPicker=getQuery('picker')==='1'; const data=await API.listSuppliers(); table.render({ elem:'#supplierTable', data, page:true, height:520, cols:[[ {field:'id',title:'供应商ID',width:130},{field:'name',title:'供应商名称',minWidth:180},{field:'contact',title:'联系人',width:100},{field:'phone',title:'电话',width:130},{field:'city',title:'城市',width:90},{field:'level',title:'等级',width:80},{field:'paymentTerm',title:'付款方式',width:120},{field:'leadTimeDays',title:'默认交期',width:100},{field:'rating',title:'评分',width:80},{field:'status',title:'状态',width:90},{title:'操作',toolbar:'#supplierActions',width:90,fixed:'right',hide:!isPicker} ]] }); table.on('tool(supplierTable)', function(obj){ if(obj.event!=='pick') return; if(window.parent && window.parent.onSupplierPicked){ window.parent.onSupplierPicked(obj.data); const index=parent.layer.getFrameIndex(window.name); parent.layer.close(index); } else layer.msg('当前页面不是选择模式'); }); });
+</script></body></html>

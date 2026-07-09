@@ -1,0 +1,12 @@
+{
+  "name": "crm-lite-layui-electron-demo",
+  "version": "0.2.0",
+  "private": true,
+  "description": "CRM demo for Electron JSSDK bridge validation",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
