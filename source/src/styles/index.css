@@ -1,0 +1,140 @@
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  color: #1f2d3d;
+  background: #f3f6fb;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+a { color: inherit; text-decoration: none; }
+
+.app-wrapper {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.sidebar-container {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 220px;
+  overflow: hidden;
+  background: #263445;
+  z-index: 1001;
+}
+
+.main-container {
+  min-height: 100%;
+  margin-left: 220px;
+  background: #f3f6fb;
+}
+
+.app-main {
+  min-height: calc(100vh - 56px);
+  padding: 18px;
+}
+
+.supplier-sidebar {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-logo {
+  height: 72px;
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  color: #fff;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.logo-mark {
+  width: 42px;
+  height: 42px;
+  line-height: 42px;
+  border-radius: 10px;
+  background: #409eff;
+  text-align: center;
+  font-weight: 700;
+  margin-right: 12px;
+}
+
+.logo-title { font-weight: 700; font-size: 16px; }
+.logo-subtitle { font-size: 12px; color: #9fb4cc; margin-top: 4px; }
+.sidebar-menu { border-right: none; flex: 1; }
+.sidebar-footer { color: #9fb4cc; font-size: 12px; padding: 14px 18px; border-top: 1px solid rgba(255,255,255,.08); }
+.footer-status { color: #67c23a; margin-top: 4px; }
+
+.navbar {
+  height: 56px;
+  overflow: hidden;
+  position: relative;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,21,41,.08);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+}
+
+.navbar-left { display: flex; align-items: center; min-width: 250px; }
+.navbar-toggle { font-size: 20px; cursor: pointer; margin-right: 12px; }
+.navbar-title { font-size: 16px; font-weight: 600; margin-right: 10px; }
+.navbar-menu { flex: 1; display: flex; align-items: center; overflow: hidden; }
+.top-link { padding: 0 10px; color: #606266; font-size: 13px; white-space: nowrap; cursor: pointer; }
+.top-link.active { color: #409EFF; font-weight: 600; }
+.navbar-right { min-width: 140px; text-align: right; }
+.user-entry { cursor: pointer; color: #303133; }
+
+.page-container { padding: 0; }
+.page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+}
+.page-title { margin: 0 0 6px; font-size: 22px; font-weight: 700; color: #1f2d3d; }
+.page-desc { color: #7a8a9a; font-size: 13px; }
+.filter-card, .table-card, .stat-card, .content-card {
+  background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+}
+.filter-card { padding: 18px 18px 0; margin-bottom: 14px; }
+.table-card { padding: 14px; }
+.content-card { padding: 16px; margin-bottom: 16px; }
+.table-toolbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.toolbar-title { font-weight: 600; }
+.amount { font-family: Consolas, Monaco, monospace; }
+.status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+.status-success { background: #67c23a; }
+.status-warning { background: #e6a23c; }
+.status-danger { background: #f56c6c; }
+.status-info { background: #909399; }
+.status-primary { background: #409EFF; }
+
+.dashboard-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 16px; }
+.dashboard-card { background: #fff; padding: 18px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+.dashboard-card-title { color: #7a8a9a; font-size: 13px; }
+.dashboard-card-value { margin-top: 10px; font-size: 28px; font-weight: 700; }
+.dashboard-columns { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; }
+
+.login-page { min-height: 100vh; display: flex; background: linear-gradient(135deg, #0b3b75 0%, #1976d2 54%, #e8f2ff 100%); }
+.login-hero { flex: 1; color: #fff; padding: 72px 7vw; }
+.login-hero h1 { font-size: 42px; margin: 0 0 18px; }
+.login-hero p { font-size: 16px; line-height: 1.8; opacity: .9; max-width: 640px; }
+.login-panel { width: 420px; margin: auto 7vw auto 0; background: #fff; border-radius: 8px; padding: 32px; box-shadow: 0 10px 40px rgba(0,0,0,.18); }
+.login-title { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+.login-subtitle { color: #909399; margin-bottom: 22px; }
+.notice-list { margin-top: 34px; max-width: 620px; }
+.notice-item { padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.18); }
+.notice-date { color: rgba(255,255,255,.7); margin-left: 10px; font-size: 12px; }
+
+@media (max-width: 1200px) {
+  .dashboard-grid { grid-template-columns: repeat(2, 1fr); }
+  .dashboard-columns { grid-template-columns: 1fr; }
+  .navbar-menu { display: none; }
+}

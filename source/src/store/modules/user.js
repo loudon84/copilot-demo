@@ -1,19 +1,16 @@
-import { login, logout, getInfo } from '@/api/user'
+import { login, getInfo, logout } from '@/api/user'
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import { resetRouter } from '@/router'
 
-const getDefaultState = () => {
-  return {
-    token: getToken(),
-    name: '',
-    avatar: ''
-  }
-}
+const getDefaultState = () => ({
+  token: getToken(),
+  name: '',
+  avatar: ''
+})
 
 const state = getDefaultState()
 
 const mutations = {
-  RESET_STATE: (state) => {
+  RESET_STATE: state => {
     Object.assign(state, getDefaultState())
   },
   SET_TOKEN: (state, token) => {
@@ -28,60 +25,44 @@ const mutations = {
 }
 
 const actions = {
-  // user login
   login({ commit }, userInfo) {
-    const { username, password } = userInfo
+    const { username, password, captcha } = userInfo
     return new Promise((resolve, reject) => {
-      login({ username: username.trim(), password: password }).then(response => {
+      login({ username: username.trim(), password, captcha }).then(response => {
         const { data } = response
         commit('SET_TOKEN', data.token)
         setToken(data.token)
         resolve()
-      }).catch(error => {
-        reject(error)
-      })
+      }).catch(error => reject(error))
     })
   },
-
-  // get user info
   getInfo({ commit, state }) {
     return new Promise((resolve, reject) => {
       getInfo(state.token).then(response => {
         const { data } = response
-
         if (!data) {
-          return reject('Verification failed, please Login again.')
+          reject('身份信息获取失败')
+          return
         }
-
         const { name, avatar } = data
-
         commit('SET_NAME', name)
         commit('SET_AVATAR', avatar)
         resolve(data)
-      }).catch(error => {
-        reject(error)
-      })
+      }).catch(error => reject(error))
     })
   },
-
-  // user logout
   logout({ commit, state }) {
     return new Promise((resolve, reject) => {
       logout(state.token).then(() => {
-        removeToken() // must remove  token  first
-        resetRouter()
+        removeToken()
         commit('RESET_STATE')
         resolve()
-      }).catch(error => {
-        reject(error)
-      })
+      }).catch(error => reject(error))
     })
   },
-
-  // remove token
   resetToken({ commit }) {
     return new Promise(resolve => {
-      removeToken() // must remove  token  first
+      removeToken()
       commit('RESET_STATE')
       resolve()
     })
@@ -94,4 +75,3 @@ export default {
   mutations,
   actions
 }
-

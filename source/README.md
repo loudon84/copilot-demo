@@ -1,99 +1,102 @@
-# vue-admin-template
+# 供应商平台 Demo（AutoTask RPA 测试目标系统）
 
-English | [简体中文](./README-zh.md)
+该工程基于 `vue-admin-template` 的 Vue2 + Element UI 目录结构实现，用于 AutoTask / Playwright RPA 功能测试。
 
-> A minimal vue admin template with Element UI & axios & iconfont & permission control & lint
+## 已实现页面
 
-**Live demo:** http://panjiachen.github.io/vue-admin-template
+1. 登录页：`/login`
+2. 供应商首页 Dashboard：`/dashboard`
+3. 订单列表：`/supplier/orders`
+4. 订单详情页：`/supplier/orders/:orderNo`
+5. 订单直发：`/supplier/order-direct`
+6. 发货单：`/supplier/deliveries`
+7. 收货列表：`/supplier/receivings`
+8. 对账单：`/finance/reconciliation`
+9. 模拟下载文件
+10. Mock API + Mock 数据
 
+## 演示账号
 
-**The current version is `v4.0+` build on `vue-cli`. If you want to use the old version , you can switch branch to [tag/3.11.0](https://github.com/PanJiaChen/vue-admin-template/tree/tag/3.11.0), it does not rely on `vue-cli`**
+```text
+账号：admin
+密码：123456
+验证码：8888
+```
 
-<p align="center">
-  <b>SPONSORED BY</b>
-</p>
-<p align="center">
-   <a href="https://finclip.com?from=vue_element" title="FinClip" target="_blank">
-      <img height="200px" src="https://gitee.com/panjiachen/gitee-cdn/raw/master/vue%E8%B5%9E%E5%8A%A9.png" title="FinClip">
-   </a>
-</p>
-
-## Build Setup
+## 启动
 
 ```bash
-# clone the project
-git clone https://github.com/PanJiaChen/vue-admin-template.git
-
-# enter the project directory
-cd vue-admin-template
-
-# install dependency
+cd source
 npm install
-
-# develop
 npm run dev
 ```
 
-This will automatically open http://localhost:9528
+默认端口：`http://localhost:9528`
 
-## Build
+## 下载文件固定路径配置
 
-```bash
-# build for test environment
-npm run build:stage
+下载按钮不会生成真实业务文件，而是指向固定文件地址。修改：
 
-# build for production environment
-npm run build:prod
+```text
+src/config/download.js
 ```
 
-## Advanced
+默认文件放在：
 
-```bash
-# preview the release environment effect
-npm run preview
-
-# preview the release environment effect + static resource analysis
-npm run preview -- --report
-
-# code format check
-npm run lint
-
-# code format check and auto fix
-npm run lint -- --fix
+```text
+public/mock-downloads/
 ```
 
-Refer to [Documentation](https://panjiachen.github.io/vue-element-admin-site/guide/essentials/deploy.html) for more information
+如需替换为你们本地文件服务：
 
-## Demo
+```js
+export const DOWNLOAD_FILE_CONFIG = {
+  baseUrl: 'http://127.0.0.1:18082/files',
+  files: {
+    orderExport: { filename: 'order-export.csv', url: 'order-export.csv' },
+    deliveryNote: { filename: 'delivery-note.csv', url: 'delivery-note.csv' },
+    reconciliationExport: { filename: 'reconciliation-export.csv', url: 'reconciliation-export.csv' }
+  }
+}
+```
 
-![demo](https://github.com/PanJiaChen/PanJiaChen.github.io/blob/master/images/demo.gif)
+## RPA Selector
 
-## Extra
+所有关键元素都增加了稳定 `data-rpa` 属性。建议 Playwright 优先使用：
 
-If you want router permission && generate menu by user roles , you can use this branch [permission-control](https://github.com/PanJiaChen/vue-admin-template/tree/permission-control)
+```ts
+await page.locator('[data-rpa="login-username"]').fill('admin')
+await page.locator('[data-rpa="login-password"]').fill('123456')
+await page.locator('[data-rpa="login-captcha"]').fill('8888')
+await page.locator('[data-rpa="login-submit"]').click()
+await page.locator('[data-rpa="menu-order-list"]').click()
+await page.locator('[data-rpa="order-no-input"]').fill('POJS2606030010')
+await page.locator('[data-rpa="order-search-btn"]').click()
+await page.locator('[data-rpa="order-detail-POJS2606030010"]').click()
+await page.locator('[data-rpa="order-detail-page"]').waitFor()
+```
 
-For `typescript` version, you can use [vue-typescript-admin-template](https://github.com/Armour/vue-typescript-admin-template) (Credits: [@Armour](https://github.com/Armour))
+## 推荐 RPA 主链路
 
-## Related Project
+1. 登录 `/login`
+2. 进入 `/dashboard`
+3. 点击订单列表
+4. 查询 `POJS2606030010`
+5. 点击详情进入订单详情页，校验订单基础信息和物料明细
+6. 在详情页点击下推发货单
+7. 跳转发货单页并下载送货单
+8. 进入收货列表
+9. 查询 `POJS2604230001`
+10. 勾选收货行并生成对账单
+11. 跳转对账单页
+12. 点击收货应付
+13. 下载对账文件
 
-- [vue-element-admin](https://github.com/PanJiaChen/vue-element-admin)
+## Mock 数据位置
 
-- [electron-vue-admin](https://github.com/PanJiaChen/electron-vue-admin)
+```text
+mock/supplier.js
+src/api/supplier.js
+```
 
-- [vue-typescript-admin-template](https://github.com/Armour/vue-typescript-admin-template)
-
-- [awesome-project](https://github.com/PanJiaChen/vue-element-admin/issues/2312)
-
-## Browsers support
-
-Modern browsers and Internet Explorer 10+.
-
-| [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/edge/edge_48x48.png" alt="IE / Edge" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>IE / Edge | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/firefox/firefox_48x48.png" alt="Firefox" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Firefox | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/chrome/chrome_48x48.png" alt="Chrome" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Chrome | [<img src="https://raw.githubusercontent.com/alrra/browser-logos/master/src/safari/safari_48x48.png" alt="Safari" width="24px" height="24px" />](http://godban.github.io/browsers-support-badges/)</br>Safari |
-| --------- | --------- | --------- | --------- |
-| IE10, IE11, Edge| last 2 versions| last 2 versions| last 2 versions
-
-## License
-
-[MIT](https://github.com/PanJiaChen/vue-admin-template/blob/master/LICENSE) license.
-
-Copyright (c) 2017-present PanJiaChen
+`src/api/supplier.js` 返回 Promise，模拟接口延迟，页面不直接读取业务数据。
